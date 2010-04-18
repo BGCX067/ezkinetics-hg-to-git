@@ -6,18 +6,64 @@ from __future__ import division
 
 from math import *
 
+from Tkinter import *
+
 #----------the GUI-----------------
 
 class GUI:
-    def __init__(self):
-        pass
+    def __init__(self, parent):
+        self.TabFrame = Frame(parent)
+        self.TabFrame.grid(row=0,column=0)
+
+        self.EmpiricFrame = Frame(parent)
+        self.EmpiricFrame.grid(row=1,column=0)
+
+        self.SelectDrugLabel = Label(self.TabFrame, text="Select Drug:")
+        self.SelectDrugLabel.grid(row=0, column=3,sticky=W)
+
+        self.CurrentDrug = StringVar(parent)
+        self.CurrentDrug.set('Vancomycin')
+        self.SelectDrugBox = OptionMenu(self.TabFrame, self.CurrentDrug, 'Vancomycin', 'Gentamicin')
+        self.SelectDrugBox.grid(row=0,column=4,sticky=W)
+
+        self.AgeLabel = Label(self.EmpiricFrame, text='Age')
+        self.AgeLabel.grid(column=0,row=0,sticky=W)
+
+        self.Ageinput = Scale(self.EmpiricFrame, from_=0, to=120, orient=HORIZONTAL, resolution=1)
+        self.Ageinput.grid(row=0,column=1)
+
+        self.SexLabel = Label(self.EmpiricFrame, text='Sex')
+        self.SexLabel.grid(row=1,column=0,sticky=W)
+
+        self.CurrentSex = StringVar(parent)
+        self.CurrentSex.set('Male')
+        self.SexSelect = Radiobutton(self.EmpiricFrame, text='Male', variable = self.CurrentSex, value='Male')
+        self.SexSelect.grid(row=1,column=1)
+        self.SexSelect = Radiobutton(self.EmpiricFrame, text='Female', variable = self.CurrentSex, value='Female')
+        self.SexSelect.grid(row=1,column=2)
+
+        self.WeightLabel = Label(self.EmpiricFrame, text='Weight')
+        self.WeightLabel.grid(row=2,column=0,sticky=W)
+
+        self.HeightLabel = Label(self.EmpiricFrame, text='Height')
+        self.HeightLabel.grid(row=3,column=0,sticky=W)
+
+        self.SCrLabel = Label(self.EmpiricFrame, text='Serum Creatinine')
+        self.SCrLabel.grid(row=4,column=0,sticky=W)
+
+        self.DoseLabel = Label(self.EmpiricFrame, text='Maintenance Dose')
+        self.DoseLabel.grid(row=5,column=0,sticky=W)
+
+        
+
+               
+        
 
 
 #---------The Formulas Needed--------
     
 class Formulas:
     def __init__(self):
-        
         pass
 
     def CrofGaul(self, sex, age, IBW, SCr):
@@ -86,8 +132,13 @@ class Formulas:
         T_half = log(2)/ke
         return T_half
 
-    
 
+def run():
+    root = Tk()
+    gui=GUI(root)
+    root.mainloop()
 #class 
 
 Formulas = Formulas()
+
+run()
