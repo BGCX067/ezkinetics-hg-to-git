@@ -12,6 +12,21 @@ from wx import *
 
 
 #----------the GUI-----------------
+class navpane(Panel):
+    def __init__(self, parent):
+        Panel.__init__(self,parent=parent)
+
+        self.topsizer = BoxSizer(HORIZONTAL)
+        self.SetSizer(self.topsizer)
+
+        #Create some widgets for the top panel
+        self.selectdruglabel = StaticText(parent=self,label = 'Please Select the Drug: ')
+        self.drugchoice = ComboBox(parent=self,choices=(['Vancomycin','Gentamicin']),style=CB_READONLY)
+        self.drugchoice.SetValue('Vancomycin')
+
+        #Put widgets into the sizer
+        self.topsizer.AddMany([self.selectdruglabel,self.drugchoice])
+
 class demographicspane(Panel):
     def __init__(self, parent):
         Panel.__init__(self,parent=parent)
@@ -19,8 +34,47 @@ class demographicspane(Panel):
         self.midsizer = FlexGridSizer(4,3)
         self.SetSizer(self.midsizer)
 
-        
+        #create some widgets for the midpanel        
+        self.agelabel = StaticText(self,label='Age: ')
+        self.ageinput = SpinCtrl(parent=self,style=SP_WRAP|SP_ARROW_KEYS)
+        self.ageinput.SetRange(0,120)
+        self.ageinput.SetValue(65)
 
+        self.sexlabel = StaticText(parent=self,label='Sex: ')
+        self.minipanel = Panel(parent=self)
+        self.minisizer = BoxSizer()
+        self.minipanel.SetSizer(self.minisizer)
+        self.sexinputmale = RadioButton(parent=self.minipanel,label='Male',style=RB_GROUP)
+        self.sexinputfemale = RadioButton(parent=self.minipanel,label='Female')
+        self.minisizer.AddMany([self.sexinputmale,self.sexinputfemale])
+
+        self.weightlabel = StaticText(parent=self,label='Weight: ')
+        self.weightinput = SpinCtrl(parent=self,style=SP_WRAP|SP_ARROW_KEYS)
+        self.weightinput.SetRange(10,1200)
+        self.weightinput.SetValue(155)
+        self.weightunits = ComboBox(parent=self,choices=(['Pounds','Kilograms']),style=CB_READONLY)
+        self.weightunits.SetValue('Pounds')
+
+        self.heightlabel = StaticText(parent=self,label='Height: ')
+        self.heightinput = SpinCtrl(parent=self,style=SP_WRAP|SP_ARROW_KEYS)
+        self.heightinput.SetRange(0,120)
+        self.heightinput.SetValue(65)
+        self.heightunits = ComboBox(parent=self,choices=(['Inches','Centimeters']),style=CB_READONLY)
+        self.heightunits.SetValue('Inches')
+        
+        self.scrlabel = StaticText(parent=self,label='Serum Creatinine: ')
+        self.scrinput = TextCtrl(parent=self)
+        self.scrinput.WriteText('0.1')
+        self.scrunitslabel = StaticText(parent=self,label='mg/dL')
+
+        #place widgets into the sizer
+        self.dummypanel = Panel(parent=self)
+        self.dummypanel1 = Panel(parent=self)
+        self.midsizer.AddMany([self.agelabel, self.ageinput,self.dummypanel1,
+                               self.sexlabel, self.minipanel,self.dummypanel,
+                               self.weightlabel, self.weightinput,self.weightunits,
+                               self.heightlabel, self.heightinput,self.heightunits,
+                               self.scrlabel,self.scrinput,self.scrunitslabel])
 
 class MainWindow(Frame):
     '''the main window frame'''
@@ -41,74 +95,19 @@ class MainWindow(Frame):
         menuBar.Append(helpmenu,"Help") # Adding the "helpmenu" to the MenuBar
         self.SetMenuBar(menuBar)  # Adding the MenuBar to the Frame content.
 
-        #Create Top panel and its sizer
-        self.topsizer = BoxSizer(HORIZONTAL)
-        self.toppanel = Panel(self, size=(600,600))
-        self.toppanel.SetSizer(self.topsizer)        
+        #Create the top pane
+        self.navpane = navpane(parent=self)
 
-        #Create some widgets for the top panel
-        self.selectdruglabel = StaticText(parent=self.toppanel,label = 'Please Select the Drug: ')
-        self.drugchoice = ComboBox(parent=self.toppanel,choices=(['Vancomycin','Gentamicin']),style=CB_READONLY)
-        self.drugchoice.SetValue('Vancomycin')
-
-        #Put the widgets into the top panel sizer
-        self.topsizer.AddMany([self.selectdruglabel,self.drugchoice])
-
-        #Create a middle panel and its sizer
-        self.midpanel = Panel(self)
-        self.midsizer = FlexGridSizer(4,3)
-        self.midpanel.SetSizer(self.midsizer)
-
-        #create some widgets for the midpanel        
-        self.agelabel = StaticText(parent=self.midpanel,label='Age: ')
-        self.ageinput = SpinCtrl(parent=self.midpanel,style=SP_WRAP|SP_ARROW_KEYS)
-        self.ageinput.SetRange(0,120)
-        self.ageinput.SetValue(65)
-
-        self.sexlabel = StaticText(parent=self.midpanel,label='Sex: ')
-        self.minipanel = Panel(parent=self.midpanel)
-        self.minisizer = BoxSizer()
-        self.minipanel.SetSizer(self.minisizer)
-        self.sexinputmale = RadioButton(parent=self.minipanel,label='Male',style=RB_GROUP)
-        self.sexinputfemale = RadioButton(parent=self.minipanel,label='Female')
-        self.minisizer.AddMany([self.sexinputmale,self.sexinputfemale])
-
-        self.weightlabel = StaticText(parent=self.midpanel,label='Weight: ')
-        self.weightinput = SpinCtrl(parent=self.midpanel,style=SP_WRAP|SP_ARROW_KEYS)
-        self.weightinput.SetRange(10,1200)
-        self.weightinput.SetValue(155)
-        self.weightunits = ComboBox(parent=self.midpanel,choices=(['Pounds','Kilograms']),style=CB_READONLY)
-        self.weightunits.SetValue('Pounds')
-
-        self.heightlabel = StaticText(parent=self.midpanel,label='Height: ')
-        self.heightinput = SpinCtrl(parent=self.midpanel,style=SP_WRAP|SP_ARROW_KEYS)
-        self.heightinput.SetRange(0,120)
-        self.heightinput.SetValue(65)
-        self.heightunits = ComboBox(parent=self.midpanel,choices=(['Inches','Centimeters']),style=CB_READONLY)
-        self.heightunits.SetValue('Inches')
-        
-        self.scrlabel = StaticText(parent=self.midpanel,label='Serum Creatinine: ')
-        self.scrinput = TextCtrl(parent=self.midpanel)
-        self.scrinput.WriteText('0.1')
-        self.scrunitslabel = StaticText(parent=self.midpanel,label='mg/dL')
-
-        #place widgets into the sizer
-        self.dummypanel = Panel(parent=self.midpanel)
-        self.dummypanel1 = Panel(parent=self.midpanel)
-        self.midsizer.AddMany([self.agelabel, self.ageinput,self.dummypanel1,
-                               self.sexlabel, self.minipanel,self.dummypanel,
-                               self.weightlabel, self.weightinput,self.weightunits,
-                               self.heightlabel, self.heightinput,self.heightunits,
-                               self.scrlabel,self.scrinput,self.scrunitslabel])
-        
+        #Create the demographics pane 
+        self.demographpane = demographicspane(parent=self)
         
         #Create a status bar at the bottom of the window
         self.CreateStatusBar()
 
         #Setup sizer for main window
         self.mainsizer = BoxSizer(VERTICAL)
-        self.mainsizer.Add(self.toppanel)
-        self.mainsizer.Add(self.midpanel)
+        self.mainsizer.Add(self.navpane)
+        self.mainsizer.Add(self.demographpane)
         self.SetSizer(self.mainsizer)
         self.SetAutoLayout(True)
         self.mainsizer.Fit(self)
