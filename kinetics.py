@@ -10,6 +10,8 @@ from wx import *
 
 from wx.lib.agw.floatspin import *
 
+from wx.lib.plot import *
+
 #---------The Formulas Needed--------
     
 class Formulas:
@@ -94,7 +96,7 @@ class navpane(Panel):
     def __init__(self, parent):
         Panel.__init__(self,parent=parent)
 
-        self.topsizer = StaticBoxSizer(StaticBox(parent=self, label='Dosing Model'),VERTICAL)
+        self.topsizer = StaticBoxSizer(StaticBox(parent=self, label='Dosing Model'))
         self.SetSizer(self.topsizer)
 
         #Create some widgets for the top panel
@@ -159,21 +161,6 @@ class demographicspane(Panel):
         self.IdealBodyWeightlabel = StaticText(parent=self,label='Ideal Weight: ')
         self.IdealBodyWeightoutput = StaticText(parent=self,label=str(self.form.IdealBodyWeight(self.getsex(),self.getheight())))
         self.IdealBodyWeightunits = StaticText(parent=self,label='Kilograms')
-
-        #IBW event binding to dynamically update the value
-##        self.sexinputmale.Bind(EVT_RADIOBUTTON, self.reloading)
-##        self.sexinputfemale.Bind(EVT_RADIOBUTTON, self.reloading)
-##        self.ageinput.Bind(EVT_SPINCTRL, self.reloading)
-##        self.weightinput.Bind(EVT_SPINCTRL, self.reloading)
-##        self.weightunits.Bind(EVT_COMBOBOX, self.reloading)
-##        self.heightinput.Bind(EVT_SPINCTRL, self.reloading)
-##        self.heightunits.Bind(EVT_COMBOBOX, self.reloading)
-##        self.scrinput.Bind(EVT_FLOATSPIN,self.reloading)
-##
-##        self.ageinput.Bind(EVT_SET_FOCUS, self.ageinput.SetSelection(0,-1))
-##        self.weightinput.Bind(EVT_SET_FOCUS, self.weightinput.SetSelection(0,-1))
-##        self.heightinput.Bind(EVT_SET_FOCUS, self.heightinput.SetSelection(0,-1))
-##        #self.heightunits.Bind(EVT_KILL_FOCUS, self.scrinput.SelectAll())
 
         #CrCl Label updated
         self.crcllabel = StaticText(parent=self,label='CrCl: ')
@@ -282,7 +269,7 @@ class dosepane(Panel):
         self.vd = VD
         self.k = ke
 
-        self.boxlabel = StaticBoxSizer(StaticBox(parent=self, label='Dosing'))
+        self.boxlabel = StaticBoxSizer(StaticBox(parent=self, label='Empiric Dosing'))
         self.midsizer = FlexGridSizer(4,3,vgap=10)
         self.boxlabel.Add(self.midsizer)
         
@@ -377,7 +364,147 @@ class dosepane(Panel):
         self.fincmaxoutput.SetLabel(str(round(self.form.Estimated_Cmax_Steady_State(self.dMDinput.GetValue(),self.infutimeinput.GetValue(),self.k,self.vd,self.dtauinput.GetValue()),0)))
         self.fincminoutput.SetLabel(str(round(self.form.Estimated_Cmin(self.cmax, self.k, self.dtauinput.GetValue(), self.infutimeinput.GetValue()),0)))
 
+class patientspecificdosepane(Panel):
+    def __init__(self, parent,VD,ke):
+        Panel.__init__(self,parent=parent,style=NO_BORDER)
+
+        self.form = Formulas()
+        self.vd = VD
+        self.k = ke
+
+        self.boxlabel = StaticBoxSizer(StaticBox(parent=self, label='Patient Specific Dosing'))
+        self.midsizer = GridBagSizer(10,10)
+        self.boxlabel.Add(self.midsizer)
         
+        self.SetSizer(self.boxlabel)
+        
+        self.firstlevellabel = StaticText(self,label='Measured Peak Level: ')
+        self.firstlevelinput = FloatSpin(parent=self,value=28.9,min_val=0, max_val=60, increment=0.1,digits=1,size=(75,-1))
+        self.firstlevelunits = StaticText(self,label=' mcg/ml')
+
+        self.firsttimefromdoselabel = StaticText(self,label='Time from end of infusion: ')
+        self.firsttimefromdoseinput = FloatSpin(parent=self,value=2.4,min_val=0, max_val=60, increment=0.1,digits=1,size=(75,-1))
+        self.firsttimefromdoseunits = StaticText(self,label=' hours')
+
+        self.secondlevellabel = StaticText(self,label='Measured Trough Level: ')
+        self.secondlevelinput = FloatSpin(parent=self,value=7.0,min_val=0, max_val=60, increment=0.1,digits=1,size=(75,-1))
+        self.secondlevelunits = StaticText(self,label=' mcg/ml')
+
+        self.secondtimefromdoselabel = StaticText(self,label='Time until next infusion: ')
+        self.secondtimefromdoseinput = FloatSpin(parent=self,value=2.4,min_val=0, max_val=60, increment=0.1,digits=1,size=(75,-1))
+        self.secondtimefromdoseunits = StaticText(self,label=' hours')
+
+        self.timebetweenlabel = StaticText(self,label='Time Elapsed Between Levels: ')
+        self.timebetweeninput = FloatSpin(parent=self,value=17.1,min_val=0, max_val=100, increment=0.1,digits=1,size=(75,-1))
+        self.timebetweenunits = StaticText(self,label=' hours')
+
+        self.infutimelabel = StaticText(self,label='Infusion Time: ')
+        self.infutimeinput = SpinCtrl(parent=self,size=(50,-1),style=SP_WRAP|SP_ARROW_KEYS)
+        self.infutimeunits = StaticText(self,label=' hours')
+        self.infutimeinput.SetRange(1,5)
+        self.infutimeinput.SetValue(2)
+
+        self.dtaulabel = StaticText(self,label='Interval of Doses: ')
+        self.dtauinput = SpinCtrl(parent=self,size=(50,-1),style=SP_WRAP|SP_ARROW_KEYS)
+        self.dtauunits = StaticText(self,label=' hours')
+        self.dtauinput.SetRange(0,50)
+        self.dtauinput.SetValue(24)
+
+        self.cmaxlabel = StaticText(self,label='Desired Cmax: ')
+        self.cmaxinput = SpinCtrl(parent=self,size=(50,-1),style=SP_WRAP|SP_ARROW_KEYS)
+        self.cmaxunits = StaticText(self,label=' mg/L')
+        self.cmaxinput.SetRange(0,50)
+        self.cmaxinput.SetValue(30)
+
+        self.cminlabel = StaticText(self,label='Desired Trough: ')
+        self.cmininput = SpinCtrl(parent=self,size=(50,-1),style=SP_WRAP|SP_ARROW_KEYS)
+        self.cminunits = StaticText(self,label=' mg/L')
+        self.cmininput.SetRange(0,50)
+        self.cmininput.SetValue(10)
+
+        self.klabel = StaticText(self,label='Calculated Rate Constant (k): ')
+        self.koutput = StaticText(self,label=str(round(self.getk(),5)))
+        self.kunits = StaticText(self,label=' /hour')
+
+        self.plotpanel = Panel(self)
+        self.plotsizer = BoxSizer(VERTICAL)
+        self.plotpanel.SetSizer(self.plotsizer)
+
+        self.plotter = PlotCanvas(self.plotpanel)
+        self.plotter.SetInitialSize(size=(400, 300))
+        self.plotter.SetEnableGrid(True)
+        #self.plotter.setLogScale((False,True))
+
+
+
+        self.logline = [(0,self.getextratrough()),(self.infutimeinput.GetValue(),self.getextrapeak())]
+        self.timechange=0        
+        self.data = [(0,0), (2,3), (3,5), (4,6), (5,8)]
+        
+        self.line = PolyLine(self.logline, colour='blue', width=3)
+        #self.line.setLogScale((False,True))
+        self.marker = PolyMarker(self.data, marker='triangle')
+        self.gc = PlotGraphics([self.line, self.marker], 'Drug Levels', 'Hours', 'mcg/ml')
+
+        self.plotsizer.Add(self.plotter)
+
+        #add widgets to the sizer
+        self.dummypanel = Panel(parent=self)
+        self.dummypanel1 = Panel(parent=self)
+        self.dummypanel2 = Panel(parent=self)
+        self.dummypanel3 = Panel(parent=self) 
+        self.midsizer.AddMany([(self.firstlevellabel,(0,0),(1,1),ALIGN_CENTER_VERTICAL|ALIGN_RIGHT),(self.firstlevelinput,(0,1),(1,1),ALIGN_CENTER),(self.firstlevelunits,(0,2),(1,1),ALIGN_CENTER_VERTICAL),
+                               (self.firsttimefromdoselabel,(1,0),(1,1),ALIGN_CENTER_VERTICAL|ALIGN_RIGHT),(self.firsttimefromdoseinput,(1,1),(1,1),ALIGN_CENTER),(self.firsttimefromdoseunits,(1,2),(1,1),ALIGN_CENTER_VERTICAL),
+                               (self.secondlevellabel,(2,0),(1,1),ALIGN_CENTER_VERTICAL|ALIGN_RIGHT),(self.secondlevelinput,(2,1),(1,1),ALIGN_CENTER),(self.secondlevelunits,(2,2),(1,1),ALIGN_CENTER_VERTICAL),
+                               (self.secondtimefromdoselabel,(3,0),(1,1),ALIGN_CENTER_VERTICAL|ALIGN_RIGHT),(self.secondtimefromdoseinput,(3,1),(1,1),ALIGN_CENTER),(self.secondtimefromdoseunits,(3,2),(1,1),ALIGN_CENTER_VERTICAL),
+                               (self.timebetweenlabel,(4,0),(1,1),ALIGN_CENTER_VERTICAL|ALIGN_RIGHT),(self.timebetweeninput,(4,1),(1,1),ALIGN_CENTER),(self.timebetweenunits,(4,2),(1,1),ALIGN_CENTER_VERTICAL),
+                               (self.infutimelabel,(5,0),(1,1),ALIGN_CENTER_VERTICAL|ALIGN_RIGHT),(self.infutimeinput,(5,1),(1,1),ALIGN_CENTER),(self.infutimeunits,(5,2),(1,1),ALIGN_CENTER_VERTICAL),
+                               (self.dtaulabel,(6,0),(1,1),ALIGN_CENTER_VERTICAL|ALIGN_RIGHT),(self.dtauinput,(6,1),(1,1),ALIGN_CENTER),(self.dtauunits,(6,2),(1,1),ALIGN_CENTER_VERTICAL),
+                               (self.cmaxlabel,(7,0),(1,1),ALIGN_CENTER_VERTICAL|ALIGN_RIGHT),(self.cmaxinput,(7,1),(1,1),ALIGN_CENTER),(self.cmaxunits,(7,2),(1,1),ALIGN_CENTER_VERTICAL),
+                               (self.cminlabel,(8,0),(1,1),ALIGN_CENTER_VERTICAL|ALIGN_RIGHT),(self.cmininput,(8,1),(1,1),ALIGN_CENTER),(self.cminunits,(8,2),(1,1),ALIGN_CENTER_VERTICAL),
+                               (self.klabel,(9,0),(1,1),ALIGN_CENTER_VERTICAL|ALIGN_RIGHT),(self.koutput,(9,1),(1,1),ALIGN_CENTER),(self.kunits,(9,2),(1,1),ALIGN_CENTER_VERTICAL),
+                               (self.plotpanel,(10,0),(3,3),ALIGN_CENTER)])
+
+        self.reloading(EVT_SPINCTRL)
+        
+    def updatelogline(self):
+        self.logline = [(0,self.getextratrough()),(self.infutimeinput.GetValue(),self.getextrapeak())]
+        self.timechange=0
+        #create line points for the logline
+        while self.timechange<(self.dtauinput.GetValue()-self.infutimeinput.GetValue()):
+            self.infutime = self.infutimeinput.GetValue()
+            self.top = self.getextrapeak()
+            self.nextpoint = self.top*pow(e,(-self.getk()*self.timechange))
+            self.logline.append((self.infutime+self.timechange,self.nextpoint))
+            self.timechange = self.timechange + 0.4
+           
+    def getk(self):
+        '''Calculates the ke when given two levels'''
+        self.ke = log(self.firstlevelinput.GetValue()/self.secondlevelinput.GetValue())/(self.timebetweeninput.GetValue())
+        return self.ke
+    def getextrapeak(self):
+        return self.firstlevelinput.GetValue()/pow(e,(-self.getk()*self.firsttimefromdoseinput.GetValue()))
+    def getextratrough(self):
+        return self.secondlevelinput.GetValue()*pow(e,(-self.getk()*self.firsttimefromdoseinput.GetValue()))
+    def updategraphpoints(self):
+        self.data[0]= (0,self.getextratrough())     #previous trough (extrapolated)
+        self.data[1] = (self.infutimeinput.GetValue(),self.getextrapeak())  #extrapolated peak
+        self.data[2] = ((self.infutimeinput.GetValue()+self.firsttimefromdoseinput.GetValue()),self.firstlevelinput.GetValue())  # time, measure peak level
+        self.data[3] = ((self.infutimeinput.GetValue()+self.firsttimefromdoseinput.GetValue()+self.timebetweeninput.GetValue()),self.secondlevelinput.GetValue()) #measured trough level
+        self.data[4] = ((self.infutimeinput.GetValue()+self.firsttimefromdoseinput.GetValue()+self.timebetweeninput.GetValue()+self.secondtimefromdoseinput.GetValue()),self.getextratrough())
+        self.updatelogline()
+        self.line = PolyLine(self.logline, colour='blue', width=3)
+        self.marker = PolyMarker(self.data, marker='triangle')
+        self.gc = PlotGraphics([self.line, self.marker], 'Drug Levels', 'Hours', 'mcg/ml')
+        self.plotter.Draw(self.gc)
+    def reloading(self,event):
+        self.koutput.SetLabel(str(round(self.getk(),5)))
+        self.updategraphpoints()
+
+
+
+
+
 
 class MainWindow(Frame):
     '''the main window frame'''
@@ -410,18 +537,28 @@ class MainWindow(Frame):
 
         #create the dosing pane
         self.dosepane = dosepane(self,self.demographpane.getvd(),self.demographpane.getk())
+
+        #create the patient specific dosing pane
+        self.specificpane = patientspecificdosepane(self,self.demographpane.getvd(),self.demographpane.getk())
+
+        #create graph of drug levels
+        #self.druggraph = levelgraph(self)
+
+        #create debug button
+        self.debugbutton = Button(self, label='Click Me')
+        self.debugbutton.Bind(EVT_BUTTON,self.debugevent)
         
         #Create a status bar at the bottom of the window
         self.CreateStatusBar()
 
         #bindings
-        #self.navpane.empiricchoice.Bind(EVT_COMBOBOX, self.update)
+        self.navpane.empiricchoice.Bind(EVT_COMBOBOX, self.changemodel)
         self.navpane.drugchoice.Bind(EVT_COMBOBOX, self.update)
 
         self.demographpane.sexinputmale.Bind(EVT_RADIOBUTTON, self.update)
         self.demographpane.sexinputfemale.Bind(EVT_RADIOBUTTON, self.update)
         self.demographpane.ageinput.Bind(EVT_SPINCTRL, self.update)
-        self.demographpane.weightinput.Bind(EVT_SPINCTRL, self.update)
+        self.demographpane.Bind(EVT_SPINCTRL, self.update)  #weightinput.
         self.demographpane.weightunits.Bind(EVT_COMBOBOX, self.update)
         self.demographpane.heightinput.Bind(EVT_SPINCTRL, self.update)
         self.demographpane.heightunits.Bind(EVT_COMBOBOX, self.update)
@@ -439,25 +576,59 @@ class MainWindow(Frame):
         self.dosepane.dtauinput.Bind(EVT_SPINCTRL,self.update)
         self.dosepane.dMDinput.Bind(EVT_SPINCTRL,self.update)
 
+        self.specificpane.firstlevelinput.Bind(EVT_FLOATSPIN,self.update)
+        self.specificpane.firsttimefromdoseinput.Bind(EVT_FLOATSPIN,self.update)
+        self.specificpane.secondlevelinput.Bind(EVT_FLOATSPIN,self.update)
+        self.specificpane.secondtimefromdoseinput.Bind(EVT_FLOATSPIN,self.update)
+        self.specificpane.timebetweeninput.Bind(EVT_FLOATSPIN,self.update)
+        self.specificpane.infutimeinput.Bind(EVT_SPINCTRL,self.update)
+        self.specificpane.dtauinput.Bind(EVT_SPINCTRL,self.update)
+        self.specificpane.cmaxinput.Bind(EVT_FLOATSPIN,self.update)
+        self.specificpane.cmininput.Bind(EVT_FLOATSPIN,self.update)
+
+
+
         #Setup sizer for main window
         self.mainsizer = BoxSizer(VERTICAL)
         self.mainsizer.Add(self.navpane,flag=ALIGN_CENTER)
-        self.mainsizer.Add(self.dosepane,flag=ALIGN_CENTER)
         self.mainsizer.Add(self.demographpane,flag=ALIGN_CENTER)
+        self.mainsizer.Add(self.dosepane,flag=ALIGN_CENTER)
+        self.mainsizer.Add(self.specificpane,flag=ALIGN_CENTER)
+        
+        self.mainsizer.Add(self.debugbutton,flag=ALIGN_CENTER)
         
         self.SetSizer(self.mainsizer)
         self.SetAutoLayout(True)
-        #self.mainsizer.Fit(self)
+        
 
         #Show Everything
         self.Show()
+        self.specificpane.Hide()
+        self.specificpane.plotter.Hide()
+        self.mainsizer.Fit(self)
     def update(self,event):
         self.demographpane.drugmodel = self.navpane.getdrug()
         self.demographpane.reloading(event)
         self.dosepane.vd = self.demographpane.getvd()
         self.dosepane.k = self.demographpane.getk()
         self.dosepane.reloading(event)
+        self.specificpane.reloading(event)
         #print self.navpane.getdrug()
+    def debugevent(self,event):
+        print self.specificpane.data
+    def changemodel(self,event):
+        if self.navpane.empiricchoice.GetValue()=='Patient Specific':
+            self.dosepane.Hide()
+            self.demographpane.Hide()
+            self.specificpane.Show()
+            self.specificpane.plotter.Show()
+            self.mainsizer.Fit(self)
+        else:
+            self.dosepane.Show()
+            self.demographpane.Show()
+            self.specificpane.Hide()
+            self.specificpane.plotter.Hide()
+            self.mainsizer.Fit(self)
         
         
     
