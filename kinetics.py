@@ -20,7 +20,7 @@ class Formulas:
 
     def CrofGaul(self, sex, age, IBW, SCr):
         '''The Crockoft-Gault Equation'''
-        if sex == 'F emale':
+        if sex == 'Female':
             self.CrCl=(((140-age)*IBW)/(SCr*72))*0.85
         else:
             self.CrCl=(((140-age)*IBW)/(SCr*72))
@@ -168,17 +168,17 @@ class demographicspane(wx.Panel):
         self.crclunits = wx.StaticText(parent=self,label=' ml/min')
 
         #Create VD label and value
-        self.VDlabel = wx.StaticText(self,label='Volume of Distribution: ')
+        self.VDlabel = wx.StaticText(self,label='Estimated Volume of Distribution: ')
         self.VDoutput = wx.StaticText(self,label=str(round(self.getvd(),1)))
         self.VDunits = wx.StaticText(self,label='Liters')
 
         #create K label and value
-        self.klabel = wx.StaticText(self,label='Rate Constant (k): ')
+        self.klabel = wx.StaticText(self,label='Estimated Rate Constant (k): ')
         self.koutput = wx.StaticText(self,label=str(round(self.getk(),5)))
         self.kunits = wx.StaticText(self,label=' /hour')
 
         #create half life label and value
-        self.thalflabel = wx.StaticText(self,label='Half-Life: ')
+        self.thalflabel = wx.StaticText(self,label='Estimated Half-Life: ')
         self.thalfoutput = wx.StaticText(self,label=str(round(self.getthalf(),1)))
         self.thalfunits = wx.StaticText(self,label=' hours')
 
@@ -377,7 +377,8 @@ class patientspecificdosepane(wx.Panel):
         self.boxlabel.Add(self.midsizer)
         
         self.SetSizer(self.boxlabel)
-        
+
+        #create widgets
         self.firstlevellabel = wx.StaticText(self,label='Measured Peak Level: ')
         self.firstlevelinput = FloatSpin(parent=self,value=28.9,min_val=0, max_val=60, increment=0.1,digits=1,size=(75,-1))
         self.firstlevelunits = wx.StaticText(self,label=' mcg/ml')
@@ -426,13 +427,16 @@ class patientspecificdosepane(wx.Panel):
         self.koutput = wx.StaticText(self,label=str(round(self.getk(),5)))
         self.kunits = wx.StaticText(self,label=' /hour')
 
+        #setup graphing area
         self.plotpanel = wx.Panel(self)
         self.plotsizer = wx.BoxSizer(wx.VERTICAL)
         self.plotpanel.SetSizer(self.plotsizer)
 
         self.plotter = PlotCanvas(self.plotpanel)
-        self.plotter.SetInitialSize(size=(400, 300))
+        self.plotter.SetInitialSize(size=(700, 550))
         self.plotter.SetEnableGrid(True)
+        #self.plotter.SetEnableLegend(True)
+        #self.plotter.SetEnablePointLabel(True)
         #self.plotter.setLogScale((False,True))
 
 
@@ -463,7 +467,7 @@ class patientspecificdosepane(wx.Panel):
                                (self.cmaxlabel,(7,0),(1,1),wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT),(self.cmaxinput,(7,1),(1,1),wx.ALIGN_CENTER),(self.cmaxunits,(7,2),(1,1),wx.ALIGN_CENTER_VERTICAL),
                                (self.cminlabel,(8,0),(1,1),wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT),(self.cmininput,(8,1),(1,1),wx.ALIGN_CENTER),(self.cminunits,(8,2),(1,1),wx.ALIGN_CENTER_VERTICAL),
                                (self.klabel,(9,0),(1,1),wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT),(self.koutput,(9,1),(1,1),wx.ALIGN_CENTER),(self.kunits,(9,2),(1,1),wx.ALIGN_CENTER_VERTICAL),
-                               (self.plotpanel,(10,0),(3,3),wx.ALIGN_CENTER)])
+                               (self.plotpanel,(0,4),(11,11),wx.ALIGN_CENTER)])
 
         self.reloading(wx.EVT_SPINCTRL)
         
@@ -494,7 +498,7 @@ class patientspecificdosepane(wx.Panel):
         self.data[4] = ((self.infutimeinput.GetValue()+self.firsttimefromdoseinput.GetValue()+self.timebetweeninput.GetValue()+self.secondtimefromdoseinput.GetValue()),self.getextratrough())
         self.updatelogline()
         self.line = PolyLine(self.logline, colour='blue', width=3)
-        self.marker = PolyMarker(self.data, marker='triangle')
+        self.marker = PolyMarker(self.data, marker='square',size=2,)
         self.gc = PlotGraphics([self.line, self.marker], 'Drug Levels', 'Hours', 'mcg/ml')
         self.plotter.Draw(self.gc)
     def reloading(self,event):
@@ -541,12 +545,9 @@ class MainWindow(wx.Frame):
         #create the patient specific dosing pane
         self.specificpane = patientspecificdosepane(self,self.demographpane.getvd(),self.demographpane.getk())
 
-        #create graph of drug levels
-        #self.druggraph = levelgraph(self)
-
         #create debug button
-        self.debugbutton = wx.Button(self, label='Click Me')
-        self.debugbutton.Bind(wx.EVT_BUTTON,self.debugevent)
+        #self.debugbutton = wx.Button(self, label='Click Me')
+        #self.debugbutton.Bind(wx.EVT_BUTTON,self.debugevent)
         
         #Create a status bar at the bottom of the window
         self.CreateStatusBar()
@@ -595,7 +596,7 @@ class MainWindow(wx.Frame):
         self.mainsizer.Add(self.dosepane,flag=wx.ALIGN_CENTER)
         self.mainsizer.Add(self.specificpane,flag=wx.ALIGN_CENTER)
         
-        self.mainsizer.Add(self.debugbutton,flag=wx.ALIGN_CENTER)
+        ##self.mainsizer.Add(self.debugbutton,flag=wx.ALIGN_CENTER)
         
         self.SetSizer(self.mainsizer)
         self.SetAutoLayout(True)
@@ -635,7 +636,7 @@ class MainWindow(wx.Frame):
 
 ##formulas = Formulas()
 app = wx.App(False)
-mainwindow = MainWindow(None, "Ez Kinetics")
+mainwindow = MainWindow(None, "Dave's Kinetics Program")
 app.MainLoop()
 
 
